@@ -43,3 +43,38 @@ SELECT
     total_amount,
     total_users
 FROM spend_allocation;
+
+
+-------------------------------------------
+
+
+WITH user_daily AS (
+    SELECT
+        spend_date,
+        user_id,
+        SUM(CASE WHEN platform = 'mobile' THEN amount ELSE 0 END) AS mobile_amt,
+        SUM(CASE WHEN platform = 'desktop' THEN amount ELSE 0 END) AS desktop_amt
+    FROM Spending
+    GROUP BY spend_date, user_id
+),
+classified AS (
+    SELECT
+        spend_date,
+        user_id,
+        CASE
+            WHEN mobile_amt > 0 AND desktop_amt > 0 THEN 'both'
+            WHEN mobile_amt > 0 THEN 'mobile'
+            ELSE 'desktop'
+        END AS platform,
+        mobile_amt + desktop_amt AS total_amount
+    FROM user_daily
+)
+SELECT
+    spend_date,
+    platform,
+    SUM(total_amount) AS total_amount,
+    COUNT(user_id) AS total_users
+FROM classified
+GROUP BY spend_date, platform
+ORDER BY spend_date, platform;
+
