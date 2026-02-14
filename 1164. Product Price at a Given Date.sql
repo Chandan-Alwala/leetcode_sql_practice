@@ -79,3 +79,50 @@ WITH id_with_no_change AS(
 SELECT product_id, 10 AS price FROM id_with_no_change
 UNION
 SELECT product_id, new_price AS price FROM id_with_change;
+
+
+---------------------------------------------------
+
+
+
+WITH distinct_products AS (
+    SELECT DISTINCT product_id
+    FROM Products
+),
+ranked_prices AS (
+    SELECT 
+        dp.product_id,
+        p.new_price,
+        p.change_date,
+        RANK() OVER (
+            PARTITION BY dp.product_id
+            ORDER BY p.change_date DESC
+        ) AS rnk
+    FROM distinct_products dp
+    LEFT JOIN Products p
+        ON dp.product_id = p.product_id
+       AND p.change_date <= '2019-08-16'
+)
+
+SELECT 
+    product_id,
+    COALESCE(new_price, 10) AS price
+FROM ranked_prices
+WHERE rnk = 1 OR rnk IS NULL;
+
+---------------------------------------------------
+
+SELECT 
+    p.product_id,
+    COALESCE(pr.new_price, 10) AS price
+FROM 
+    (SELECT DISTINCT product_id FROM Products) p
+LEFT JOIN Products pr
+    ON p.product_id = pr.product_id
+   AND pr.change_date = (
+        SELECT MAX(change_date)
+        FROM Products
+        WHERE product_id = p.product_id
+          AND change_date <= '2019-08-16'
+   );
+
