@@ -33,3 +33,22 @@ FROM (
     UNION ALL
     SELECT employee_id FROM level3
 ) t;
+
+------------------
+
+WITH RECURSIVE subordinates AS (
+    SELECT employee_id
+    FROM Employees
+    WHERE manager_id = 1
+      AND employee_id <> 1
+
+    UNION ALL
+
+    SELECT e.employee_id
+    FROM Employees e
+    JOIN subordinates s
+        ON e.manager_id = s.employee_id
+)
+
+SELECT DISTINCT employee_id
+FROM subordinates;
