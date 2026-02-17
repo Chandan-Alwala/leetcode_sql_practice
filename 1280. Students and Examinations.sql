@@ -1,3 +1,17 @@
+SELECT 
+    s.student_id,
+    s.student_name,
+    sub.subject_name,
+    COUNT(e.subject_name) AS attended_exams
+FROM Students s
+CROSS JOIN Subjects sub
+LEFT JOIN Examinations e
+    ON s.student_id = e.student_id 
+    AND sub.subject_name = e.subject_name
+GROUP BY s.student_id, s.student_name, sub.subject_name
+ORDER BY s.student_id, sub.subject_name;
+--------------------------------------
+
 # Modular solution with Two CTEs
 WITH subject_distributor AS (
     SELECT
@@ -26,7 +40,7 @@ LEFT JOIN exam_count ec ON
     sd.subject_name = ec.subject_name
 GROUP BY sd.student_id, sd.subject_name
 ORDER BY sd.student_id, sd.subject_name;
-
+--------------------------------------
 
 # Concise solution with two JOINs, no CTEs
 SELECT 
@@ -35,7 +49,7 @@ SELECT
     sub.subject_name , 
     COUNT(e.student_id) AS attended_exams
 FROM Students s 
-JOIN Subjects sub
+JOIN Subjects sub -- wrong as not cross join
 LEFT JOIN Examinations e ON 
     s.student_id=e.student_id AND 
     sub.subject_name=e.subject_name
