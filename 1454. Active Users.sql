@@ -1,3 +1,27 @@
+WITH distinct_logins AS (
+    SELECT DISTINCT id, login_date
+    FROM Logins
+),
+streaks AS (
+    SELECT 
+        id,
+        login_date,
+        DATE_SUB(login_date, INTERVAL ROW_NUMBER() OVER (PARTITION BY id ORDER BY login_date) DAY) AS grp
+    FROM distinct_logins
+),
+groups AS (
+    SELECT id
+    FROM streaks
+    GROUP BY id, grp
+    HAVING COUNT(*) >= 5
+)
+
+SELECT a.id, a.name
+FROM Accounts a
+JOIN groups g
+ON a.id = g.id
+ORDER BY a.id;
+---------------------------------
 # Solution with multi JOIN, concise but difficult to understand
 SELECT 
     distinct a.id, 
