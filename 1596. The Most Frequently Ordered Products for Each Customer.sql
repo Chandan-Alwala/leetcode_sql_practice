@@ -1,3 +1,33 @@
+WITH order_counts AS (
+    SELECT 
+        customer_id,
+        product_id,
+        COUNT(*) AS cnt
+    FROM Orders
+    GROUP BY customer_id, product_id
+),
+
+ranked_products AS (
+    SELECT 
+        customer_id,
+        product_id,
+        cnt,
+        RANK() OVER (
+            PARTITION BY customer_id 
+            ORDER BY cnt DESC
+        ) AS rnk
+    FROM order_counts
+)
+
+SELECT 
+    r.customer_id,
+    r.product_id,
+    p.product_name
+FROM ranked_products r
+JOIN Products p
+    ON r.product_id = p.product_id
+WHERE r.rnk = 1;
+-------------------------------
 # CTE with RANK, JOIN in final query
 WITH order_ranker AS (
     SELECT
