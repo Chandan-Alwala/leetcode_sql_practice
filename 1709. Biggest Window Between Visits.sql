@@ -1,10 +1,4 @@
-SELECT 
-    user_id,
-    MAX(DATEDIFF(
-        IFNULL(next_visit, '2021-01-01'),
-        visit_date
-    )) AS biggest_window
-FROM (
+WITH visits_with_next AS (
     SELECT 
         user_id,
         visit_date,
@@ -13,7 +7,16 @@ FROM (
             ORDER BY visit_date
         ) AS next_visit
     FROM UserVisits
-) t
+)
+SELECT 
+    user_id,
+    MAX(
+        DATEDIFF(
+            IFNULL(next_visit, '2021-01-01'),
+            visit_date
+        )
+    ) AS biggest_window
+FROM visits_with_next
 GROUP BY user_id
 ORDER BY user_id;
 ------------------------------
