@@ -1,3 +1,30 @@
+WITH RECURSIVE all_subtasks AS (
+    SELECT 
+        task_id,
+        1 AS subtask_id,
+        subtasks_count
+    FROM Tasks
+    
+    UNION ALL
+    
+    SELECT 
+        task_id,
+        subtask_id + 1,
+        subtasks_count
+    FROM all_subtasks
+    WHERE subtask_id < subtasks_count
+)
+SELECT 
+    a.task_id,
+    a.subtask_id
+FROM all_subtasks a
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Executed e
+    WHERE e.task_id = a.task_id
+      AND e.subtask_id = a.subtask_id
+);
+-------------------------
 # Recursive query with sub-query
 WITH RECURSIVE cte AS (
     SELECT task_id, subtasks_count FROM tasks
