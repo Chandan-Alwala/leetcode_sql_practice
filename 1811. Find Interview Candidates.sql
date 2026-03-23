@@ -21,7 +21,7 @@ consecutive_medals AS (
         FROM all_medals
     ) t
     WHERE next1 = contest_id + 1 AND next2 = contest_id + 2
-    GROUP BY user_id
+    GROUP BY user_id -- optional to add group by 
 ),
 candidates AS (
     SELECT user_id FROM gold_winners
