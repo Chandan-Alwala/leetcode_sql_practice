@@ -1,3 +1,38 @@
+WITH gold_winners AS (
+    SELECT gold_medal AS user_id
+    FROM Contests
+    GROUP BY gold_medal
+    HAVING COUNT(*) >= 3
+),
+all_medals AS (
+    SELECT gold_medal AS user_id, contest_id FROM Contests
+    UNION ALL
+    SELECT silver_medal, contest_id FROM Contests
+    UNION ALL
+    SELECT bronze_medal, contest_id FROM Contests
+),
+consecutive_medals AS (
+    SELECT user_id
+    FROM (
+        SELECT user_id,
+               contest_id,
+               LEAD(contest_id,1) OVER(PARTITION BY user_id ORDER BY contest_id) AS next1,
+               LEAD(contest_id,2) OVER(PARTITION BY user_id ORDER BY contest_id) AS next2
+        FROM all_medals
+    ) t
+    WHERE next1 = contest_id + 1 AND next2 = contest_id + 2
+    GROUP BY user_id
+),
+candidates AS (
+    SELECT user_id FROM gold_winners
+    UNION
+    SELECT user_id FROM consecutive_medals
+)
+SELECT u.name, u.mail
+FROM Users u
+JOIN candidates c
+  ON u.user_id = c.user_id;
+-----------------------
 # Solution with multiple CTEs, easier to understand
 WITH contest_pivot AS (
     SELECT gold_medal AS user_id, contest_id, 'gold' AS medal FROM contests
