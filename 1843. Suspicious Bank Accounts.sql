@@ -6,21 +6,37 @@ WITH monthly_income AS (
     FROM Transactions
     WHERE type = 'Creditor'
     GROUP BY account_id, DATE_FORMAT(day, '%Y-%m-01')
-)
-SELECT DISTINCT account_id
-FROM (
+),
+flagged AS (
     SELECT 
         m.account_id,
         m.month,
-        CASE WHEN m.total_income > a.max_income THEN 1 ELSE 0 END AS is_exceed,
-        LEAD(m.month) OVER (PARTITION BY m.account_id ORDER BY m.month) AS next_month,
-        LEAD(
-            CASE WHEN m.total_income > a.max_income THEN 1 ELSE 0 END
-        ) OVER (PARTITION BY m.account_id ORDER BY m.month) AS next_flag
+        CASE 
+            WHEN m.total_income > a.max_income THEN 1 
+            ELSE 0 
+        END AS is_exceed
     FROM monthly_income m
     JOIN Accounts a
         ON m.account_id = a.account_id
-) t
+),
+with_lead AS (
+    SELECT 
+        account_id,
+        month,
+        is_exceed,
+        LEAD(month) OVER (
+            PARTITION BY account_id 
+            ORDER BY month
+        ) AS next_month,
+        LEAD(is_exceed) OVER (
+            PARTITION BY account_id 
+            ORDER BY month
+        ) AS next_flag
+    FROM flagged
+)
+
+SELECT DISTINCT account_id
+FROM with_lead
 WHERE 
     is_exceed = 1
     AND next_flag = 1
