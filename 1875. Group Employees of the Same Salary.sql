@@ -1,3 +1,27 @@
+WITH valid_salaries AS (
+    SELECT salary
+    FROM Employees
+    GROUP BY salary
+    HAVING COUNT(*) >= 2
+),
+ranked_salaries AS (
+    SELECT 
+        salary,
+        DENSE_RANK() OVER (ORDER BY salary) AS team_id
+    FROM valid_salaries
+)
+SELECT 
+    e.employee_id,
+    e.name,
+    e.salary,
+    r.team_id
+FROM Employees e
+JOIN ranked_salaries r
+    ON e.salary = r.salary
+ORDER BY 
+    r.team_id,
+    e.employee_id;
+----------------------------
 # Solution with two CTEs and DENSE_RANK
 WITH salary_ranker AS(
     SELECT
