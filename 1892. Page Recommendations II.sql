@@ -1,3 +1,40 @@
+WITH friends AS (
+    -- make friendships bidirectional
+    SELECT user1_id AS user_id, user2_id AS friend_id FROM Friendship
+    UNION
+    SELECT user2_id AS user_id, user1_id AS friend_id FROM Friendship
+),
+
+friend_likes AS (
+    -- get pages liked by friends
+    SELECT 
+        f.user_id,
+        l.page_id
+    FROM friends f
+    JOIN Likes l
+        ON f.friend_id = l.user_id
+),
+
+filtered AS (
+    -- remove pages already liked by the user
+    SELECT fl.user_id, fl.page_id
+    FROM friend_likes fl
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM Likes l2
+        WHERE l2.user_id = fl.user_id
+          AND l2.page_id = fl.page_id
+    )
+)
+
+SELECT 
+    user_id,
+    page_id,
+    COUNT(*) AS friends_likes
+FROM filtered
+GROUP BY user_id, page_id;
+
+------------------
 # Solution with one CTE and sub-qeury
 WITH friends AS (
     SELECT
