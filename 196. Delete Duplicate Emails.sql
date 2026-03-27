@@ -1,3 +1,18 @@
+DELETE p1
+FROM Person p1
+JOIN Person p2
+  ON p1.Email = p2.Email
+ AND p1.Id > p2.Id;
+-----
+DELETE p1
+FROM Person p1
+WHERE EXISTS (
+    SELECT 1
+    FROM Person p2
+    WHERE p1.Email = p2.Email
+      AND p1.Id > p2.Id
+);
+--------------------------------------
 # With sub-query
 DELETE p1.* 
 FROM person p1
