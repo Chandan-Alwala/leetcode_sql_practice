@@ -1,3 +1,23 @@
+WITH common AS (
+    SELECT 
+        r1.user_id AS user1_id,
+        r2.user_id AS user2_id,
+        COUNT(*) AS cnt
+    FROM Relations r1
+    JOIN Relations r2
+        ON r1.follower_id = r2.follower_id
+       AND r1.user_id < r2.user_id
+    GROUP BY r1.user_id, r2.user_id
+),
+max_cnt AS (
+    SELECT MAX(cnt) AS max_common FROM common
+)
+SELECT 
+    user1_id,
+    user2_id
+FROM common
+WHERE cnt = (SELECT max_common FROM max_cnt);
+---------------------
 WITH common_finder AS (
     SELECT
         f1.user_id AS user1_id,
