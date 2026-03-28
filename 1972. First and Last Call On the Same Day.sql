@@ -23,6 +23,40 @@ SELECT DISTINCT user1 AS user_id
 FROM find_callers
 WHERE first_caller = last_caller;
 -------------------------
+WITH calls_norm AS (
+    -- Step 1: make calls bidirectional
+    SELECT caller_id AS user_id, recipient_id AS other_id, call_time
+    FROM Calls
+    UNION ALL
+    SELECT recipient_id AS user_id, caller_id AS other_id, call_time
+    FROM Calls
+),
+ranked AS (
+    -- Step 2: rank calls per user per day
+    SELECT 
+        user_id,
+        other_id,
+        DATE(call_time) AS call_date,
+        call_time,
+        ROW_NUMBER() OVER (
+            PARTITION BY user_id, DATE(call_time)
+            ORDER BY call_time
+        ) AS rn_asc,
+        ROW_NUMBER() OVER (
+            PARTITION BY user_id, DATE(call_time)
+            ORDER BY call_time DESC
+        ) AS rn_desc
+    FROM calls_norm
+)
+SELECT DISTINCT r1.user_id
+FROM ranked r1
+JOIN ranked r2
+    ON r1.user_id = r2.user_id
+   AND r1.call_date = r2.call_date
+WHERE r1.rn_asc = 1     -- first call
+  AND r2.rn_desc = 1    -- last call
+  AND r1.other_id = r2.other_id;
+-------------------------
 # Solution with two CTEs and DISTINCT
 WITH callers AS (
     SELECT caller_id AS user1, recipient_id AS user2, call_time FROM calls
