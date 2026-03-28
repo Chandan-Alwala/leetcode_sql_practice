@@ -1,3 +1,28 @@
+WITH callers AS (
+    SELECT caller_id AS user1, recipient_id AS user2, call_time FROM calls
+    UNION ALL
+    SELECT recipient_id AS user1, caller_id AS user2, call_time FROM calls
+),
+find_callers AS (
+    SELECT
+        user1,
+        DATE(call_time) AS call_date,
+        FIRST_VALUE(user2) OVER (
+            PARTITION BY user1, DATE(call_time)
+            ORDER BY call_time
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS first_caller,
+        FIRST_VALUE(user2) OVER (
+            PARTITION BY user1, DATE(call_time)
+            ORDER BY call_time DESC
+            ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS last_caller
+    FROM callers
+)
+SELECT DISTINCT user1 AS user_id
+FROM find_callers
+WHERE first_caller = last_caller;
+-------------------------
 # Solution with two CTEs and DISTINCT
 WITH callers AS (
     SELECT caller_id AS user1, recipient_id AS user2, call_time FROM calls
