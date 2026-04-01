@@ -1,3 +1,13 @@
+SELECT COUNT(*) AS accounts_count
+FROM Subscriptions s
+WHERE YEAR(s.start_date) = 2021
+AND NOT EXISTS (
+    SELECT 1
+    FROM Streams st
+    WHERE st.account_id = s.account_id
+      AND YEAR(st.stream_date) = 2021
+);
+------------
 WITH registered_in_2021 AS (
     SELECT
         account_id,
