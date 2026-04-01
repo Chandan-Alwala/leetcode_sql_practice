@@ -1,3 +1,40 @@
+WITH senior_cte AS (
+    SELECT 
+        employee_id,
+        salary,
+        SUM(salary) OVER (ORDER BY salary) AS running_salary
+    FROM Candidates
+    WHERE experience = 'Senior'
+),
+filtered_seniors AS (
+    SELECT *
+    FROM senior_cte
+    WHERE running_salary <= 70000
+),
+junior_cte AS (
+    SELECT 
+        employee_id,
+        salary,
+        SUM(salary) OVER (ORDER BY salary) AS running_salary
+    FROM Candidates
+    WHERE experience = 'Junior'
+),
+filtered_juniors AS (
+    SELECT *
+    FROM junior_cte
+    WHERE running_salary <= 70000 - (
+        SELECT COALESCE(MAX(running_salary), 0) FROM filtered_seniors
+    )
+)
+
+SELECT 'Senior' AS experience, COUNT(*) AS accepted_candidates
+FROM filtered_seniors
+
+UNION ALL
+
+SELECT 'Junior', COUNT(*)
+FROM filtered_juniors;
+----------------------
 # Solution 1
 WITH exp_rank AS(
     SELECT
