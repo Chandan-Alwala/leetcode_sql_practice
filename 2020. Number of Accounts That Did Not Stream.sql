@@ -8,6 +8,14 @@ AND NOT EXISTS (
       AND YEAR(st.stream_date) = 2021
 );
 ------------
+SELECT COUNT(*) AS accounts_count
+FROM Subscriptions s
+LEFT JOIN Streams st
+  ON s.account_id = st.account_id
+ AND YEAR(st.stream_date) = 2021
+WHERE YEAR(s.start_date) = 2021
+  AND st.account_id IS NULL;
+------------
 WITH registered_in_2021 AS (
     SELECT
         account_id,
