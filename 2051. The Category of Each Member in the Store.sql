@@ -1,3 +1,24 @@
+WITH category_cte AS (
+    SELECT 
+        v.member_id,
+        CASE
+            WHEN 100 * COUNT(p.visit_id) / COUNT(v.visit_id) >= 80 THEN 'Diamond'
+            WHEN 100 * COUNT(p.visit_id) / COUNT(v.visit_id) >= 50 THEN 'Gold'
+            ELSE 'Silver'
+        END AS category
+    FROM Visits v
+    LEFT JOIN Purchases p
+        ON v.visit_id = p.visit_id
+    GROUP BY v.member_id
+)
+SELECT 
+    m.member_id,
+    m.name,
+    COALESCE(c.category, 'Bronze') AS category
+FROM Members m
+LEFT JOIN category_cte c
+    ON m.member_id = c.member_id;
+----------------------
 WITH visit_counts AS (
     SELECT member_id, COUNT(*) AS total_visits
     FROM Visits
