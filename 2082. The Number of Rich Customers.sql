@@ -1,3 +1,12 @@
+WITH rich_customers AS (
+    SELECT customer_id
+    FROM Store
+    GROUP BY customer_id
+    HAVING MAX(amount) > 500
+)
+SELECT COUNT(*) AS rich_count
+FROM rich_customers;
+------------------------
 # Solution 1
 WITH rich_counter AS (
     SELECT
