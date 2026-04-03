@@ -1,3 +1,17 @@
+WITH flag AS (
+    SELECT 
+        customer_id,
+        MAX(CASE WHEN order_type = 0 THEN 1 ELSE 0 END) AS has_type0
+    FROM Orders
+    GROUP BY customer_id
+)
+SELECT o.*
+FROM Orders o
+JOIN flag f
+  ON o.customer_id = f.customer_id
+WHERE o.order_type = 0
+   OR f.has_type0 = 0;
+--------------------------
 WITH cust_with_type0 AS (
     SELECT DISTINCT customer_id
     FROM Orders
