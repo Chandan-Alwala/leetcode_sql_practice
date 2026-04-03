@@ -1,3 +1,15 @@
+WITH cust_with_type0 AS (
+    SELECT DISTINCT customer_id
+    FROM Orders
+    WHERE order_type = 0
+)
+SELECT *
+FROM Orders o
+WHERE o.order_type = 0
+   OR o.customer_id NOT IN (
+        SELECT customer_id FROM cust_with_type0
+   );
+----------------------
 # With CTEs and sub-query
 WITH customers_with_zero_type AS (
     SELECT
