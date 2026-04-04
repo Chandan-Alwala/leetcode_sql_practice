@@ -1,3 +1,21 @@
+WITH assigned AS (
+    SELECT 
+        p.passenger_id,
+        MIN(b.bus_id) AS bus_id
+    FROM Passengers p
+    JOIN Buses b
+      ON b.arrival_time >= p.arrival_time
+    GROUP BY p.passenger_id
+)
+SELECT 
+    b.bus_id,
+    COUNT(a.passenger_id) AS passengers_cnt
+FROM Buses b
+LEFT JOIN assigned a
+  ON b.bus_id = a.bus_id
+GROUP BY b.bus_id
+ORDER BY b.bus_id;
+----------------------
 WITH passenger_buses AS (
 	SELECT
 		p.passenger_id,
