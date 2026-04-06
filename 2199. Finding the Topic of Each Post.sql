@@ -9,6 +9,6 @@ WITH kw_finder AS (
 
 SELECT
     post_id,
-    IFNULL(GROUP_CONCAT(DISTINCT topic_id), 'Ambiguous!') AS topic
+    IFNULL(GROUP_CONCAT(DISTINCT topic_id ORDER BY topic_id), 'Ambiguous!') AS topic
 FROM kw_finder
 GROUP BY post_id;
