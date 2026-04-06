@@ -1,3 +1,17 @@
+WITH cte AS (
+    SELECT 
+        user_id,
+        purchase_date,
+        LEAD(purchase_date) OVER (
+            PARTITION BY user_id 
+            ORDER BY purchase_date
+        ) AS next_date
+    FROM Purchases
+)
+SELECT DISTINCT user_id
+FROM cte
+WHERE DATEDIFF(next_date, purchase_date) <= 7;
+--------------------
 SELECT
     DISTINCT p1.user_id
 FROM purchases p1
