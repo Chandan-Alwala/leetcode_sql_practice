@@ -15,5 +15,6 @@ WITH row_numbering AS (
 
 SELECT
     id,
-    first_value(drink) OVER(PARTITION BY block) AS drink
-FROM block;
+    FIRST_VALUE(drink) OVER (PARTITION BY block ORDER BY row_num) AS drink
+FROM block
+ORDER BY id;
